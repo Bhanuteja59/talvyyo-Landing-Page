@@ -1,691 +1,544 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import '../index.css';
+import React, { useEffect, useState } from 'react';
 import './Home.css';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import ChatWidget from '../components/ChatWidget';
+import {
+    ArrowRight,
+    ChevronRight,
+    Star,
+    Code,
+    Palette,
+    Smartphone,
+    Globe,
+    Users,
+    Zap,
+    Shield,
+    TrendingUp,
+    CheckCircle,
+    Quote,
+    Calendar,
+    Award,
+    Sparkles
+} from 'lucide-react';
+
+import Header from "../components/Header"
+import Footer from "../components/Footer"
 
 const Home = () => {
-    // --- State: Top Bar ---
-    const [countdown, setCountdown] = useState('');
+    const [timeLeft, setTimeLeft] = useState({
+        hours: 0,
+        minutes: 0,
+        seconds: 0
+    });
 
-    // --- State: Hero ---
-    const [heroActiveIndex, setHeroActiveIndex] = useState(0);
-    const [heroIsPaused, setHeroIsPaused] = useState(false);
-    const touchStartX = useRef(0);
-    const touchDx = useRef(0);
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const [scrollProgress, setScrollProgress] = useState(0);
 
-    // --- State: Services ---
-    const [serviceActiveIndex, setServiceActiveIndex] = useState(0);
-    const [servicePinnedIndex, setServicePinnedIndex] = useState(null);
+    useEffect(() => {
+        // Countdown timer
+        const timer = setInterval(() => {
+            const now = new Date();
+            const target = new Date();
+            target.setHours(24, 0, 0, 0); // Set to midnight
 
-    // --- State: Scroll Animations ---
-    const observerRef = useRef(null);
+            const diff = target - now;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-    // --- State: Animated Counters ---
-    const [hasAnimatedStats, setHasAnimatedStats] = useState(false);
+            setTimeLeft({ hours, minutes, seconds });
+        }, 1000);
 
-    // --- Data ---
-    const slides = [
-        {
-            image: "https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?q=80&w=1600&auto=format&fit=crop",
-            alt: "Design team collaborating"
+        // Mouse tracking for interactive background
+        const handleMouseMove = (e) => {
+            setMousePosition({ x: e.clientX, y: e.clientY });
+        };
+
+        // Scroll progress
+        const handleScroll = () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const progress = (scrollTop / scrollHeight) * 100;
+            setScrollProgress(progress);
+        };
+
+        // Scroll animations
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                        if (entry.target.classList.contains('counter')) {
+                            animateCounter(entry.target);
+                        }
+                    }
+                });
+            },
+            { threshold: 0.1, rootMargin: '0px 0px -100px 0px' }
+        );
+
+        document.querySelectorAll('.animate-on-scroll').forEach((el) => observer.observe(el));
+
+        // Particle animation
+        createParticles();
+
+        // Typing animation for hero title
+        animateTyping();
+
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('scroll', handleScroll);
+
+        return () => {
+            clearInterval(timer);
+            observer.disconnect();
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
+    const animateCounter = (element) => {
+        const target = parseInt(element.getAttribute('data-target'));
+        const duration = 2000;
+        const step = target / (duration / 16);
+        let current = 0;
+
+        const timer = setInterval(() => {
+            current += step;
+            if (current >= target) {
+                element.textContent = target + '+';
+                clearInterval(timer);
+            } else {
+                element.textContent = Math.floor(current) + '+';
+            }
+        }, 16);
+    };
+
+    const createParticles = () => {
+        const container = document.querySelector('.particle-container');
+        if (!container) return;
+
+        // Clear existing particles
+        container.innerHTML = '';
+
+        // Create floating particles
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'floating-particle';
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.top = `${Math.random() * 100}%`;
+            particle.style.width = `${Math.random() * 4 + 2}px`;
+            particle.style.height = particle.style.width;
+            particle.style.animationDelay = `${Math.random() * 5}s`;
+            particle.style.animationDuration = `${Math.random() * 3 + 2}s`;
+            container.appendChild(particle);
         }
+
+        // Create morphing blobs
+        for (let i = 0; i < 3; i++) {
+            const blob = document.createElement('div');
+            blob.className = `morph-blob blob-${i + 1}`;
+            container.appendChild(blob);
+        }
+    };
+
+    const animateTyping = () => {
+        const heroTitle = document.querySelector('.hero-title');
+        if (!heroTitle) return;
+
+        const text = heroTitle.innerHTML;
+        heroTitle.classList.add('typing-active');
+
+        // Let CSS handle the typing animation
+        setTimeout(() => {
+            heroTitle.classList.add('typing-complete');
+        }, 3000);
+    };
+
+    const technologies = [
+        { name: 'Flutter', icon: <Zap />, color: '#02569B' },
+        { name: 'React JS', icon: <Code />, color: '#61DAFB' },
+        { name: 'Vue JS', icon: <span className="vue-icon">Vue</span>, color: '#4FC08D' },
+        { name: 'Next JS', icon: <Globe />, color: '#000000' },
+        { name: 'Laravel', icon: <span className="laravel-icon">L</span>, color: '#FF2D20' },
+        { name: 'Android', icon: <Smartphone />, color: '#3DDC84' },
+        { name: 'iOS', icon: <Apple />, color: '#000000' },
+        { name: 'PHP', icon: <span className="php-icon">PHP</span>, color: '#777BB4' },
     ];
 
     const services = [
         {
+            icon: <Globe />,
             title: "Web Development",
-            desc: "Build a user-friendly, high-performance website that showcases your business online.",
-            icon: (
-                <svg viewBox="0 0 24 24" className="h-7 w-7" fill="currentColor" aria-hidden="true">
-                    <path d="M8.7 13.3L6.4 11l2.3-2.3-1.4-1.4L3.6 11l3.7 3.7 1.4-1.4zm6.6 0l2.3 2.3L21.3 11l-3.7-3.7-1.4 1.4L18.5 11l-2.3 2.3 1.1 1zM14 4l-4 16 2 .5 4-16-2-.5z" />
-                </svg>
-            )
+            description: "Build user-friendly, high-performance websites that showcase your business online.",
+            features: ["Responsive Design", "SEO Optimized", "Performance Focused"]
         },
         {
+            icon: <Smartphone />,
             title: "App Development",
-            desc: "Create custom mobile apps that simplify workflows and delight users.",
-            icon: (
-                <svg viewBox="0 0 24 24" className="h-7 w-7" fill="currentColor" aria-hidden="true">
-                    <path d="M7 2h10a3 3 0 013 3v14a3 3 0 01-3 3H7a3 3 0 01-3-3V5a3 3 0 013-3zm0 2a1 1 0 00-1 1v3h12V5a1 1 0 00-1-1H7zm11 7H6v8a1 1 0 001 1h10a1 1 0 001-1v-8z" />
-                </svg>
-            )
+            description: "Create custom mobile apps that simplify workflows and delight users.",
+            features: ["Cross-Platform", "Native Performance", "Scalable"]
         },
         {
+            icon: <Palette />,
             title: "UI/UX Services",
-            desc: "Design and develop engaging, accessible, and user-friendly interfaces.",
-            icon: (
-                <svg viewBox="0 0 24 24" className="h-7 w-7" fill="currentColor" aria-hidden="true">
-                    <path d="M12 2a7 7 0 00-4 12.8V18a2 2 0 002 2h4a2 2 0 002-2v-3.2A7 7 0 0012 2zm2 16h-4v-1h4v1zm.4-4.5l-.4.3V16h-4v-2.2l-.4-.3A5 5 0 1114.4 13.5z" />
-                </svg>
-            )
+            description: "Design and develop engaging, accessible, and user-friendly interfaces.",
+            features: ["User Research", "Prototyping", "Design Systems"]
         },
         {
+            icon: <TrendingUp />,
             title: "Digital Marketing",
-            desc: "Grow your reach with content, SEO/ASO, and performance campaigns.",
-            icon: (
-                <svg viewBox="0 0 24 24" className="h-7 w-7" fill="currentColor" aria-hidden="true">
-                    <path d="M21 8v8l-9 3V5l9 3zM2 10h6v4H2v-4zm7 4.9l2-.7V9.8l-2-.7v5.8z" />
-                </svg>
-            )
+            description: "Grow your reach with content, SEO/ASO, and performance campaigns.",
+            features: ["SEO/ASO", "Content Strategy", "Analytics"]
         }
     ];
 
-    const techs = [
-        { name: "Flutter", img: "https://www.wrteam.in/_next/static/media/FlutterColor.2beceef9.png" },
-        { name: "React JS", img: "https://www.wrteam.in/_next/static/media/ReactColor.4ac1faaa.png" },
-        { name: "Vue JS", img: "https://www.wrteam.in/_next/static/media/VueColor.02d9f917.png" },
-        { name: "Next JS", img: "https://www.wrteam.in/_next/static/media/nextjs-icon.43763b75.svg" },
-        { name: "Laravel", img: "https://www.wrteam.in/_next/static/media/Laravel.5c1a2139.svg" },
-        { name: "Android", img: "https://www.wrteam.in/_next/static/media/Android.b540b2c3.svg" },
-        { name: "iOS", img: "https://www.wrteam.in/_next/static/media/iOS.5d4ae9b5.svg" },
-        { name: "PHP", img: "https://www.php.net//images/logos/new-php-logo.svg" },
-    ];
-
-    const reviews = [
+    const testimonials = [
         {
             name: "Johnepse",
-            role: "For Customer Support",
-            text: "Can explain of these guys. They are so talented and customer support is beyond the limit. Recommended them to all. They work professionally. Awesome!!!",
-            stars: 5,
-            iconPath: "M7.2 11.3c.9 0 1.6.8 1.6 1.7 0 1.2-1 2.2-2.2 2.2S4.5 14.2 4.5 13c0-3.7 2.2-6.6 5.5-7.8l.5 1.8c-2.2.9-3.3 2.7-3.3 4.3zm9 0c.9 0 1.6.8 1.6 1.7 0 1.2-1 2.2-2.2 2.2s-2.1-1-2.1-2.2c0-3.7 2.1-6.6 5.4-7.8l.5 1.8c-2.2.9-3.2 2.7-3.2 4.3z"
+            role: "Customer Support",
+            rating: 5,
+            comment: "Can explain of these guys. They are so talented and customer support is beyond the limit. Recommended them to all.",
+            avatarColor: "#4F46E5"
+        },
+        {
+            name: "Ajayambaliya",
+            role: "Customer Support",
+            rating: 5,
+            comment: "Best app ever I've seen, and best part is the service... they provide the best services. Keep it up team.",
+            avatarColor: "#10B981"
         },
         {
             name: "musbarozkok",
-            role: "For Code Quality & Support",
-            text: "I’m very satisfied with both the code quality and support. Fastest support team I have ever seen here.",
-            stars: 5,
-            iconPath: "M7.2 11.3c.9 0 1.6.8 1.6 1.7 0 1.2-1 2.2-2.2 2.2S4.5 14.2 4.5 13c0-3.7 2.2-6.6 5.5-7.8l.5 1.8c-2.2.9-3.3 2.7-3.3 4.3zm9 0c.9 0 1.6.8 1.6 1.7 0 1.2-1 2.2-2.2 2.2s-2.1-1-2.1-2.2c0-3.7 2.1-6.6 5.4-7.8l.5 1.8c-2.2.9-3.2 2.7-3.2 4.3z"
-        },
-        {
-            name: "Akam_Barznji",
-            role: "For Code Quality",
-            text: "Amazing! The team is amazing. Professionalism is high level. Always responsive when you need them. Our iOS app plan is with them as well.",
-            stars: 5,
-            iconPath: "M7.2 11.3c.9 0 1.6.8 1.6 1.7 0 1.2-1 2.2-2.2 2.2S4.5 14.2 4.5 13c0-3.7 2.2-6.6 5.5-7.8l.5 1.8c-2.2.9-3.3 2.7-3.3 4.3zm9 0c.9 0 1.6.8 1.6 1.7 0 1.2-1 2.2-2.2 2.2s-2.1-1-2.1-2.2c0-3.7 2.1-6.6 5.4-7.8l.5 1.8c-2.2.9-3.2 2.7-3.2 4.3z"
-        },
-        {
-            name: "ckkapel",
-            role: "For Code Quality",
-            text: "WRTeam, we are continually impressed by robustness and scalability. Optimized, bug-free code with rigorous standards.",
-            stars: 5,
-            iconPath: "M7.2 11.3c.9 0 1.6.8 1.6 1.7 0 1.2-1 2.2-2.2 2.2S4.5 14.2 4.5 13c0-3.7 2.2-6.6 5.5-7.8l.5 1.8c-2.2.9-3.3 2.7-3.3 4.3zm9 0c.9 0 1.6.8 1.6 1.7 0 1.2-1 2.2-2.2 2.2s-2.1-1-2.1-2.2c0-3.7 2.1-6.6 5.4-7.8l.5 1.8c-2.2.9-3.2 2.7-3.2 4.3z"
-        },
-        {
-            name: "Dafrii",
-            role: "For Customer Support",
-            text: "I would like to give 10 stars to these guys! CodeCanyon allows only 5, but they deserve more than 5 because they’re doing a great job.",
-            stars: 5,
-            iconPath: "M7.2 11.3c.9 0 1.6.8 1.6 1.7 0 1.2-1 2.2-2.2 2.2S4.5 14.2 4.5 13c0-3.7 2.2-6.6 5.5-7.8l.5 1.8c-2.2.9-3.3 2.7-3.3 4.3zm9 0c.9 0 1.6.8 1.6 1.7 0 1.2-1 2.2-2.2 2.2s-2.1-1-2.1-2.2c0-3.7 2.1-6.6 5.4-7.8l.5 1.8c-2.2.9-3.2 2.7-3.2 4.3z"
-        },
+            role: "Code Quality & Support",
+            rating: 5,
+            comment: "I'm very satisfied with both the code quality and support. Fastest support team I have ever seen.",
+            avatarColor: "#F59E0B"
+        }
     ];
 
-    // --- Custom Hook: Animated Counter ---
-    const useCounter = (end, duration = 2000, shouldStart = false) => {
-        const [count, setCount] = useState(0);
-
-        useEffect(() => {
-            if (!shouldStart) return;
-
-            let startTime;
-            let animationFrame;
-
-            const animate = (currentTime) => {
-                if (!startTime) startTime = currentTime;
-                const progress = Math.min((currentTime - startTime) / duration, 1);
-
-                setCount(Math.floor(progress * end));
-
-                if (progress < 1) {
-                    animationFrame = requestAnimationFrame(animate);
-                }
-            };
-
-            animationFrame = requestAnimationFrame(animate);
-            return () => cancelAnimationFrame(animationFrame);
-        }, [end, duration, shouldStart]);
-
-        return count;
-    };
-
-    // --- Effects ---
-
-    // 1. Scroll Animation Observer
-    useEffect(() => {
-        const options = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.1
-        };
-
-        observerRef.current = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-
-                    // Trigger stats animation when about section is visible
-                    if (entry.target.id === 'about-talvyyo' && !hasAnimatedStats) {
-                        setHasAnimatedStats(true);
-                    }
-                }
-            });
-        }, options);
-
-        // Observe all sections
-        const sections = document.querySelectorAll('section, .animate-on-scroll');
-        sections.forEach(section => {
-            if (observerRef.current) {
-                observerRef.current.observe(section);
-            }
-        });
-
-        return () => {
-            if (observerRef.current) {
-                observerRef.current.disconnect();
-            }
-        };
-    }, [hasAnimatedStats]);
-
-    // 2. Countdown Logic
-    useEffect(() => {
-        const offerEnd = new Date("2026-09-15T23:59:59").getTime();
-        const timer = setInterval(() => {
-            const now = new Date().getTime();
-            const diff = offerEnd - now;
-            if (diff <= 0) {
-                setCountdown("Offer expired");
-                clearInterval(timer);
-                return;
-            }
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            setCountdown(`${days}d ${hours}h ${mins}m`);
-        }, 1000);
-
-        return () => clearInterval(timer);
-    }, []);
-
-    // 4. Hero Slider Logic
-    useEffect(() => {
-        let timer;
-        if (!heroIsPaused && slides.length > 1) {
-            timer = setInterval(() => {
-                setHeroActiveIndex((current) => (current + 1) % slides.length);
-            }, 6000);
-        }
-        return () => clearInterval(timer);
-    }, [heroIsPaused, slides.length]);
-
-    // 5. Services Auto-Rotate Logic
-    useEffect(() => {
-        const interval = setInterval(() => {
-            if (servicePinnedIndex === null) {
-                setServiceActiveIndex((prev) => (prev + 1) % services.length);
-            }
-        }, 3500);
-        return () => clearInterval(interval);
-    }, [servicePinnedIndex, services.length]);
-
-    // --- Handlers: Hero ---
-    const handleTouchStart = (e) => {
-        touchStartX.current = e.touches[0].clientX;
-        setHeroIsPaused(true);
-    };
-
-    const handleTouchMove = (e) => {
-        touchDx.current = e.touches[0].clientX - touchStartX.current;
-    };
-
-    const handleTouchEnd = () => {
-        if (Math.abs(touchDx.current) > 40) {
-            if (touchDx.current < 0) {
-                setHeroActiveIndex((current) => (current + 1) % slides.length);
-            } else {
-                setHeroActiveIndex((current) => (current - 1 + slides.length) % slides.length);
-            }
-        }
-        touchDx.current = 0;
-        setHeroIsPaused(false);
-    };
-
-    // --- Handlers: Services ---
-    const handleServiceInteraction = (index) => {
-        if (servicePinnedIndex === null) {
-            setServiceActiveIndex(index);
-        }
-    };
-
-    const handleServiceClick = (index) => {
-        setServicePinnedIndex(servicePinnedIndex === index ? null : index);
-        setServiceActiveIndex(index);
-    };
-
-    // --- Handlers: 3D Card Tilt ---
-    const handleCardMouseMove = useCallback((e, cardRef) => {
-        if (!cardRef) return;
-
-        const rect = cardRef.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-
-        const rotateX = ((y - centerY) / centerY) * -10;
-        const rotateY = ((x - centerX) / centerX) * 10;
-
-        cardRef.style.setProperty('--rotate-x', `${rotateX}deg`);
-        cardRef.style.setProperty('--rotate-y', `${rotateY}deg`);
-    }, []);
-
-    const handleCardMouseLeave = useCallback((cardRef) => {
-        if (!cardRef) return;
-
-        cardRef.style.setProperty('--rotate-x', '0deg');
-        cardRef.style.setProperty('--rotate-y', '0deg');
-    }, []);
-
-    // Button ripple effect
-    const createRipple = (e) => {
-        const button = e.currentTarget;
-        const ripple = document.createElement('span');
-        const rect = button.getBoundingClientRect();
-
-        const diameter = Math.max(rect.width, rect.height);
-        const radius = diameter / 2;
-
-        ripple.style.width = ripple.style.height = `${diameter}px`;
-        ripple.style.left = `${e.clientX - rect.left - radius}px`;
-        ripple.style.top = `${e.clientY - rect.top - radius}px`;
-        ripple.classList.add('ripple-effect');
-
-        const existingRipple = button.querySelector('.ripple-effect');
-        if (existingRipple) {
-            existingRipple.remove();
-        }
-
-        button.appendChild(ripple);
-
-        setTimeout(() => ripple.remove(), 600);
-    };
-
-    // Use animated counter
-    const yearsCount = useCounter(7, 2000, hasAnimatedStats);
-
     return (
-        <>
-            <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] rounded-lg bg-neutral-900 px-3 py-2 text-white">Skip to content</a>
+        <div className="talvyyo-home">
+            <Header />
+            {/* Scroll Progress Bar */}
+            <div className="scroll-progress" style={{ transform: `scaleX(${scrollProgress / 100})` }}></div>
 
-            {/* Top notice bar with countdown */}
-            <div className="bg-blue-50 text-blue-900 border-b border-blue-200">
-                <div className="mx-auto max-w-7xl px-4 py-2 text-xs md:text-sm flex items-center justify-center gap-2">
-                    <span className="inline-flex h-2 w-2 rounded-full bg-blue-600"></span> 🎉 Special Offer: 20% off for first 5 new clients • Ends in
-                    <span id="countdown" className="font-semibold">{countdown}</span>
+            {/* Interactive Background */}
+            <div
+                className="interactive-bg"
+                style={{
+                    background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(79, 70, 229, 0.15), rgba(139, 92, 246, 0.05) 50%, transparent 80%)`
+                }}
+            ></div>
+
+            {/* Floating Particles Background */}
+            <div className="particle-container"></div>
+
+            {/* Top Banner */}
+            <div className="top-banner">
+                <div className="container">
+                    <div className="banner-content">
+                        <Sparkles size={16} />
+                        <span className="banner-text">
+                            Special Offer: 20% off for first 5 new clients • Ends in
+                            <span className="countdown">
+                                {String(timeLeft.hours).padStart(2, '0')}:
+                                {String(timeLeft.minutes).padStart(2, '0')}:
+                                {String(timeLeft.seconds).padStart(2, '0')}
+                            </span>
+                        </span>
+                        <Sparkles size={16} />
+                    </div>
                 </div>
             </div>
 
-            <Header />
+            {/* Hero Section */}
+            <section className="hero-section">
+                <div className="container">
+                    <div className="row align-items-center min-vh-100">
+                        <div className="col-lg-6">
+                            <div className="hero-content animate-on-scroll fade-in">
+                                <div className="tagline">
+                                    <span className="tag">Web</span>
+                                    <span className="dot">•</span>
+                                    <span className="tag">Apps</span>
+                                    <span className="dot">•</span>
+                                    <span className="tag">Branding</span>
+                                    <span className="dot">•</span>
+                                    <span className="tag">Growth</span>
+                                </div>
 
-            <main id="main">
-                {/* HERO SECTION */}
-                <section
-                    id="hero"
-                    className="relative overflow-hidden min-h-[600px] md:min-h-[700px] bg-gray-900 animate-on-scroll"
-                    onMouseEnter={() => setHeroIsPaused(true)}
-                    onMouseLeave={() => setHeroIsPaused(false)}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
-                >
-                    {/* Slides */}
-                    <div className="absolute inset-0 z-0">
-                        {slides.map((slide, index) => (
-                            <div
-                                key={index}
-                                className={`absolute inset-0 transition-opacity duration-700 ease-out ${index === heroActiveIndex ? 'opacity-100 hero-slide-active' : 'opacity-0'
-                                    }`}
-                                data-active={index === heroActiveIndex}
-                            >
-                                <img src={slide.image} alt={slide.alt} className="h-full w-full object-cover gpu-accelerated" />
-                                <div className="absolute inset-0 hero-gradient-overlay"></div>
-                                <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 h-48 w-[140%] rounded-[50%] bg-white/10 blur-3xl float-element-slow"></div>
+                                <h1 className="hero-title">
+                                    <span className="line-reveal">We design and build</span>
+                                    <br />
+                                    <span className="highlight gradient-shift">products</span>
+                                    <br />
+                                    <span className="line-reveal delay-1">that grow your business</span>
+                                </h1>
+
+                                <p className="hero-description">
+                                    Full-stack partner for startups and enterprises: strategy, UX/UI,
+                                    development, and performance marketing.
+                                </p>
+
+                                <div className="hero-actions">
+                                    <button className="btn btn-primary btn-lg me-3 magnetic-btn">
+                                        <span className="btn-content">Start a Project <ArrowRight className="ms-2" /></span>
+                                        <span className="btn-shine"></span>
+                                    </button>
+                                    <button className="btn btn-outline btn-lg magnetic-btn text-white">
+                                        <span className="play-icon">▶</span> See Our Work
+                                    </button>
+                                </div>
+
+                                <div className="hero-stats">
+                                    <div className="stat">
+                                        <div className="stat-number counter" data-target="7">0</div>
+                                        <div className="stat-label">Years Experience</div>
+                                    </div>
+                                    <div className="stat">
+                                        <div className="stat-number">500+</div>
+                                        <div className="stat-label">Projects Delivered</div>
+                                    </div>
+                                    <div className="stat">
+                                        <div className="stat-number">98%</div>
+                                        <div className="stat-label">Client Satisfaction</div>
+                                    </div>
+                                </div>
                             </div>
-                        ))}
-                    </div>
-
-                    <div className="relative z-10 mx-auto max-w-7xl px-4 py-24 md:py-36 text-white">
-                        <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium ring-1 ring-white/30 glass-card animate-on-scroll fade-in-down">
-                            Web • Mobile • Branding • Growth
-                        </p>
-                        <h1 className="mt-5 text-4xl md:text-6xl font-extrabold leading-tight animate-on-scroll fade-in-up">
-                            We design and build <span className="text-gradient">products that grow</span> your business
-                        </h1>
-                        <p className="mt-5 max-w-2xl text-neutral-200 animate-on-scroll fade-in-up stagger-1">
-                            Full-stack partner for startups and enterprises: strategy, UX/UI, development, and performance marketing.
-                        </p>
-                        <div className="mt-8 flex flex-wrap gap-3 animate-on-scroll fade-in-up stagger-2">
-                            <a
-                                href="/"
-                                className="btn-magnetic btn-ripple btn-gradient-hover rounded-xl bg-blue-600 px-5 py-3 font-semibold hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 will-change-transform"
-                                onClick={createRipple}
-                            >
-                                Start a Project
-                            </a>
-                            <a
-                                href="/"
-                                className="btn-magnetic btn-ripple rounded-xl bg-white/10 px-5 py-3 font-semibold ring-1 ring-white/30 hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 glass-card will-change-transform"
-                                onClick={createRipple}
-                            >
-                                See Our Work
-                            </a>
                         </div>
-                    </div>
 
-                    <div className="pointer-events-auto absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
-                        {slides.map((_, index) => (
-                            <button
-                                key={index}
-                                aria-label={`Slide ${index + 1}`}
-                                className={`hero-dot h-2.5 rounded-full transition-all duration-250 ${index === heroActiveIndex ? 'w-[18px] bg-white/95' : 'w-2.5 bg-white/40 hover:bg-white/70'}`}
-                                onClick={() => setHeroActiveIndex(index)}
-                            ></button>
-                        ))}
-                    </div>
-                </section>
-
-                {/* ABOUT SECTION */}
-                <section id="about-talvyyo" className="mx-auto max-w-7xl px-4 py-16 animate-on-scroll">
-                    <div className="grid gap-10 md:grid-cols-2 items-center">
-                        <div className="relative animate-on-scroll fade-in-left">
-                            <div className="relative overflow-hidden rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,.15)] image-hover-zoom">
-                                <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1600&auto=format&fit=crop" alt="Talvyyo team at work" className="w-full h-[380px] md:h-[450px] object-cover" loading="lazy" />
-                            </div>
-                            <div className="absolute left-1/2 -translate-x-1/2 -bottom-10 md:bottom-8 md:left-8 md:translate-x-0 float-element">
-                                <div className="rounded-2xl p-1 bg-gradient-to-br from-amber-300 via-rose-300 to-amber-600 shadow-xl stat-badge">
-                                    <div className="rounded-2xl bg-neutral-900/95 text-white px-6 py-5 md:px-8 md:py-6">
-                                        <div className="text-center">
-                                            <div className="stat-number text-5xl md:text-6xl font-extrabold leading-none">
-                                                {yearsCount}<span className="align-top text-3xl md:text-4xl">+</span>
+                        <div className="col-lg-6">
+                            <div className="hero-visual animate-on-scroll slide-in-right">
+                                <div className="floating-cards">
+                                    <div className="card card-1">
+                                        <Code size={32} />
+                                        <span>Code</span>
+                                    </div>
+                                    <div className="card card-2">
+                                        <Palette size={32} />
+                                        <span>Design</span>
+                                    </div>
+                                    <div className="card card-3">
+                                        <TrendingUp size={32} />
+                                        <span>Growth</span>
+                                    </div>
+                                </div>
+                                <div className="mockup-container">
+                                    <div className="browser-mockup">
+                                        <div className="browser-header">
+                                            <div className="dots">
+                                                <span></span>
+                                                <span></span>
+                                                <span></span>
                                             </div>
-                                            <div className="mt-1 text-2xl md:text-3xl font-bold">Years</div>
-                                            <div className="mt-2 text-xs tracking-[0.35em] text-neutral-300">EXPERIENCE</div>
+                                        </div>
+                                        <div className="browser-content">
+                                            <div className="code-line"></div>
+                                            <div className="code-line"></div>
+                                            <div className="code-line"></div>
+                                        </div>
+                                    </div>
+                                    <div className="phone-mockup">
+                                        <div className="phone-screen">
+                                            <div className="app-screen">
+                                                <div className="app-header"></div>
+                                                <div className="app-content">
+                                                    <div className="content-item"></div>
+                                                    <div className="content-item"></div>
+                                                    <div className="content-item"></div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </section>
 
-                        <div className="animate-on-scroll fade-in-right">
-                            <a href="/" className="inline-flex items-center gap-2 rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-700 ring-1 ring-neutral-200 hover:bg-neutral-200/70">
-                                About Talvyyo
-                            </a>
-
-                            <h2 className="mt-4 text-3xl md:text-4xl font-extrabold leading-snug">
-                                We are Committed to Providing our
-                                <span className="text-blue-600"> Clients</span> with End-to-End
-                                <span className="text-blue-600"> App and Website</span> Solutions.
-                            </h2>
-
-                            <p className="mt-5 text-neutral-700">
-                                Talvyyo has experience of more than 7 years as a software design & development studio. Our senior web and app teams deliver outcomes that reach all your requirements — on time and at quality.
-                            </p>
-
-                            <p className="mt-4 text-neutral-700">
-                                We’re a cross-functional group of designers and engineers: creative, dedicated, and fluent in full-stack development and UI/UX. We use modern stacks like Laravel, Flutter, React/Next.js, Node, Figma, and AWS to ship reliably and scale confidently.
-                            </p>
-
-                            <ul className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-neutral-700">
-                                <li className="flex items-start gap-2">
-                                    <span className="mt-1 h-2 w-2 rounded-full bg-blue-500"></span> Full-stack delivery (Design → Dev → QA)
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="mt-1 h-2 w-2 rounded-full bg-blue-500"></span> Agile sprints, code reviews, CI/CD
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="mt-1 h-2 w-2 rounded-full bg-blue-500"></span> SEO & analytics baked-in
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="mt-1 h-2 w-2 rounded-full bg-blue-500"></span> Secure contracts & IP ownership
-                                </li>
-                            </ul>
-
-                            <div className="mt-8">
-                                <a href="/" className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300">
-                                    Discover More
-                                </a>
+            {/* About Section */}
+            <section className="about-section">
+                <div className="container">
+                    <div className="row align-items-center">
+                        <div className="col-lg-6">
+                            <div className="about-visual animate-on-scroll scale-in">
+                                <div className="team-illustration">
+                                    <div className="person person-1"></div>
+                                    <div className="person person-2"></div>
+                                    <div className="person person-3"></div>
+                                    <div className="connection-line"></div>
+                                    <div className="connection-line"></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-
-                {/* DIGITAL SOLUTIONS SECTION */}
-                <section id="digital-solutions" className="bg-blue-50 animate-on-scroll">
-                    <div className="mx-auto max-w-7xl px-4 py-16 md:py-20">
-                        <div className="flex justify-center">
-                            <span className="inline-flex items-center rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-100 shadow-sm animate-on-scroll scale-in">
-                                Our Solutions
-                            </span>
-                        </div>
-
-                        <h2 className="mt-6 text-center text-3xl md:text-5xl font-extrabold leading-tight text-neutral-900 animate-on-scroll fade-in-up">
-                            <span className="text-blue-700">Digital Solutions</span> We Offer, as the<br className="hidden md:block" />
-                            <span className="text-blue-700">Best Software</span> Development<br className="hidden md:block" /> Company.
-                        </h2>
-
-                        <p className="mt-5 max-w-3xl mx-auto text-center text-neutral-600 animate-on-scroll fade-in-up stagger-1">
-                            We serve a wide variety of digital solutions designed for businesses — creating modern websites and mobile apps for e-commerce, education, restaurants, and beyond.
-                        </p>
-
-                        <div className="mt-14 grid gap-10 md:grid-cols-2 animate-on-scroll">
-                            {/* Mobile App Products */}
-                            <article className="group grid grid-cols-[1fr,1.1fr] items-center gap-5 rounded-3xl bg-white shadow-[0_20px_50px_rgba(0,0,0,.08)] p-6 md:p-8 ring-1 ring-blue-100 image-hover-zoom fade-in-left stagger-2">
-                                <div className="relative overflow-hidden rounded-2xl ring-1 ring-neutral-100">
-                                    <div className="absolute inset-0">
-                                        <div className="h-1/2 bg-white"></div>
-                                        <div className="h-1/2 bg-blue-600"></div>
-                                    </div>
-                                    <img src="https://www.wrteam.in/_next/static/media/AppImage.ec9fead5.webp" alt="Mobile app mockup" className="relative z-[1] w-full object-contain" loading="lazy" />
-                                </div>
-                                <div>
-                                    <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm">
-                                        <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden="true">
-                                            <path d="M7 2h10a3 3 0 013 3v14a3 3 0 01-3 3H7a3 3 0 01-3-3V5a3 3 0 013-3zm0 2a1 1 0 00-1 1v3h12V5a1 1 0 00-1-1H7zm11 7H6v8a1 1 0 001 1h10a1 1 0 001-1v-8z" />
-                                        </svg>
-                                    </div>
-                                    <h3 className="text-2xl md:text-3xl font-extrabold text-neutral-900 leading-snug">
-                                        Mobile<br />App<br />Products
-                                    </h3>
-                                    <a href="/" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-300">
-                                        Discover More
-                                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor"><path d="M13 5l7 7-7 7-1.4-1.4L16.2 13H4v-2h12.2l-4.6-4.6L13 5z" /></svg>
-                                    </a>
-                                </div>
-                            </article>
-
-                            {/* Web App Products */}
-                            <article className="group grid grid-cols-[1fr,1.1fr] items-center gap-5 rounded-3xl bg-white shadow-[0_20px_50px_rgba(0,0,0,.08)] p-6 md:p-8 ring-1 ring-blue-100 image-hover-zoom fade-in-right stagger-2">
-                                <div className="relative overflow-hidden rounded-2xl ring-1 ring-neutral-100">
-                                    <div className="absolute inset-0">
-                                        <div className="h-1/2 bg-white"></div>
-                                        <div className="h-1/2 bg-blue-600"></div>
-                                    </div>
-                                    <img src="https://www.wrteam.in/_next/static/media/WebImage.943f6814.webp" alt="Web app mockup" className="relative z-[1] w-full object-contain" loading="lazy" />
-                                </div>
-                                <div>
-                                    <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm">
-                                        <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden="true">
-                                            <path d="M8.7 13.3L6.4 11l2.3-2.3-1.4-1.4L3.6 11l3.7 3.7 1.4-1.4zm6.6 0l2.3 2.3L21.3 11l-3.7-3.7-1.4 1.4L18.5 11l-2.3 2.3 1.1 1zM14 4l-4 16 2 .5 4-16-2-.5z" />
-                                        </svg>
-                                    </div>
-                                    <h3 className="text-2xl md:text-3xl font-extrabold text-neutral-900 leading-snug">
-                                        Web App<br />Products
-                                    </h3>
-                                    <a href="/" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-300">
-                                        Discover More
-                                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor"><path d="M13 5l7 7-7 7-1.4-1.4L16.2 13H4v-2h12.2l-4.6-4.6L13 5z" /></svg>
-                                    </a>
-                                </div>
-                            </article>
-                        </div>
-                    </div>
-                </section>
-
-                {/* SERVICES SECTION */}
-                <section id="all-services-talvyyo" className="mx-auto max-w-7xl px-4 py-16 animate-on-scroll">
-                    <div className="grid gap-12 md:grid-cols-2 items-start">
-                        {/* LEFT: Copy */}
-                        <div className="animate-on-scroll fade-in-left">
-                            <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">
-                                Talvyyo Services
-                            </span>
-
-                            <h2 className="mt-4 text-4xl md:text-5xl font-extrabold leading-tight">
-                                <span className="text-blue-700">Innovate, Implement, Succeed:</span><br /> We Offer Every IT Service You need, all in
-                                <span className="text-blue-700"> One Place.</span>
-                            </h2>
-
-                            <p className="mt-5 text-neutral-700 leading-relaxed">
-                                In the modern world having a digital presence is crucial; it's necessary to have a business website or app that leads to stronger administration & growth. Remove limitations of place & time from your business with Talvyyo's software services.
-                            </p>
-
-                            <p className="mt-5 text-neutral-700 leading-relaxed">
-                                We offer all software services in one place — from designing a personalized mobile app & website to streamlining your business operations.
-                            </p>
-
-                            <p className="mt-5 text-neutral-700 leading-relaxed">
-                                Our team includes experienced UI/UX designers, web developers, Flutter & React Native app developers, and growth marketers. We're committed to delivering results and building long-term relationships.
-                            </p>
-                        </div>
-
-                        {/* RIGHT: 2x2 Interactive Card Grid */}
-                        <div className="grid gap-10 sm:grid-cols-2 animate-on-scroll fade-in-right" id="serviceCards">
-                            {services.map((service, index) => (
-                                <article
-                                    key={index}
-                                    className={`service-card service-card-3d ${index === 0 ? 'stagger-1' : index === 1 ? 'stagger-2' : index === 2 ? 'stagger-3' : 'stagger-4'}`}
-                                    tabIndex="0"
-                                    role="button"
-                                    aria-pressed={serviceActiveIndex === index}
-                                    data-active={serviceActiveIndex === index}
-                                    onMouseEnter={() => handleServiceInteraction(index)}
-                                    onFocus={() => handleServiceInteraction(index)}
-                                    onMouseMove={(e) => handleCardMouseMove(e, e.currentTarget)}
-                                    onMouseLeave={(e) => {
-                                        if (servicePinnedIndex === null) setServiceActiveIndex(serviceActiveIndex);
-                                        handleCardMouseLeave(e.currentTarget);
-                                    }}
-                                    onClick={() => handleServiceClick(index)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                            e.preventDefault();
-                                            handleServiceClick(index);
-                                        }
-                                    }}
-                                >
-                                    <div className="card-inner">
-                                        <div className="card-icon">
-                                            {service.icon}
-                                        </div>
-                                        <h3 className="card-title">{service.title}</h3>
-                                        <p className="card-text">{service.desc}</p>
-                                        <a href="/" className="explore">Explore Service
-                                            <svg viewBox="0 0 24 24" className="h-4 w-4 inline" fill="currentColor"><path d="M13 5l7 7-7 7-1.4-1.4L16.2 13H4v-2h12.2l-4.6-4.6L13 5z" /></svg>
-                                        </a>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-
-                {/* TECH STACK SECTION */}
-                <section id="tech-stack" className="bg-blue-50 animate-on-scroll">
-                    <div className="mx-auto max-w-7xl px-4 py-16">
-                        <div className="grid gap-10 md:grid-cols-2 items-start animate-on-scroll">
-                            <div className="fade-in-left">
-                                <span className="inline-flex items-center rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-100 shadow-sm">
-                                    Technology <span className="ml-1 text-neutral-500">We Use</span>
-                                </span>
-
-                                <h2 className="mt-4 text-3xl md:text-5xl font-extrabold leading-tight text-neutral-900">
-                                    Our Developers Have a <span className="text-blue-600">Strong Grip</span> on Advanced <span className="text-blue-600">Technologies</span> to Enhance Your Website & App.
+                        <div className="col-lg-6">
+                            <div className="about-content animate-on-scroll fade-in">
+                                <h2 className="section-title">
+                                    About <span className="brand">Talvyyo</span>
                                 </h2>
+                                <p className="section-subtitle">
+                                    We are Committed to Providing our Clients with End-to-End App and Website Solutions.
+                                </p>
+                                <p className="about-description">
+                                    Talvyyo has experience of more than 7 years as a software design & development studio.
+                                    Our senior web and app teams deliver outcomes that reach all your requirements — on time and at quality.
+                                </p>
+
+                                <div className="features-grid">
+                                    <div className="feature">
+                                        <CheckCircle className="feature-icon" />
+                                        <span>Full-stack delivery (Design → Dev → QA)</span>
+                                    </div>
+                                    <div className="feature">
+                                        <CheckCircle className="feature-icon" />
+                                        <span>Agile sprints, code reviews, CI/CD</span>
+                                    </div>
+                                    <div className="feature">
+                                        <CheckCircle className="feature-icon" />
+                                        <span>SEO & analytics baked-in</span>
+                                    </div>
+                                    <div className="feature">
+                                        <CheckCircle className="feature-icon" />
+                                        <span>Secure contracts & IP ownership</span>
+                                    </div>
+                                </div>
+
+                                <button className="btn btn-secondary text-white magnetic-btn">
+                                    Discover More <ChevronRight className="ms-2" />
+                                    <span className="btn-shine"></span>
+                                </button>
                             </div>
-
-                            <p className="text-neutral-700 leading-relaxed fade-in-right">
-                                We build with modern stacks across web and mobile — pairing solid engineering with clean UX. Here are some of the core technologies we ship with daily.
-                            </p>
                         </div>
+                    </div>
+                </div>
+            </section>
 
-                        <div className="mt-10 rounded-[28px] bg-[#121a2a] text-white ring-1 ring-black/10 shadow-[0_24px_60px_rgba(2,6,23,.35)] overflow-hidden tech-rail-bg">
-                            <div className="relative px-6 py-10 md:px-10">
-                                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-x-6 gap-y-10">
-                                    {techs.map((tech, index) => (
-                                        <div key={index} className="flex flex-col items-center">
-                                            <div className="tech-tile group">
-                                                <img src={tech.img} alt={tech.name} className="tech-img" loading="lazy" decoding="async" />
-                                            </div>
-                                            <div className="tech-spine"></div>
-                                            <span className="tech-label">{tech.name}</span>
-                                        </div>
-                                    ))}
+            {/* Services Section */}
+            <section className="services-section">
+                <div className="container">
+                    <div className="section-header text-center animate-on-scroll fade-in">
+                        <h2 className="section-title">Our Solutions</h2>
+                        <p className="section-subtitle">
+                            Digital Solutions We Offer, as the Best Software Development Company
+                        </p>
+                    </div>
+
+                    <div className="row g-4">
+                        {services.map((service, index) => (
+                            <div className="col-lg-3 col-md-6" key={index}>
+                                <div className={`service-card animate-on-scroll slide-up delay-${index}`}>
+                                    <div className="service-icon">
+                                        {service.icon}
+                                    </div>
+                                    <h4>{service.title}</h4>
+                                    <p>{service.description}</p>
+                                    <div className="service-features">
+                                        {service.features.map((feature, idx) => (
+                                            <span key={idx} className="feature-tag">{feature}</span>
+                                        ))}
+                                    </div>
+                                    <button className="service-link">
+                                        Explore Service <ChevronRight size={16} />
+                                    </button>
                                 </div>
                             </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Technologies Section */}
+            <section className="technologies-section">
+                <div className="container">
+                    <div className="section-header text-center animate-on-scroll fade-in">
+                        <h2 className="section-title">Technology We Use</h2>
+                        <p className="section-subtitle">
+                            Our Developers Have a Strong Grip on Advanced Technologies
+                        </p>
+                    </div>
+
+                    <div className="tech-grid">
+                        {technologies.map((tech, index) => (
+                            <div
+                                className="tech-card animate-on-scroll scale-in"
+                                key={index}
+                                style={{ '--tech-color': tech.color }}
+                            >
+                                <div className="tech-icon">
+                                    {tech.icon}
+                                </div>
+                                <span className="tech-name">{tech.name}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Testimonials Section */}
+            <section className="testimonials-section">
+                <div className="container">
+                    <div className="section-header text-center animate-on-scroll fade-in">
+                        <h2 className="section-title">Client Reviews</h2>
+                        <p className="section-subtitle">Hear It in Their Words</p>
+                    </div>
+
+                    <div className="testimonials-slider">
+                        {testimonials.map((testimonial, index) => (
+                            <div className="testimonial-card animate-on-scroll slide-up" key={index}>
+                                <div className="testimonial-header">
+                                    <div
+                                        className="avatar"
+                                        style={{ backgroundColor: testimonial.avatarColor }}
+                                    >
+                                        {testimonial.name.charAt(0)}
+                                    </div>
+                                    <div className="testimonial-info">
+                                        <h5>{testimonial.name}</h5>
+                                        <span>{testimonial.role}</span>
+                                    </div>
+                                    <div className="rating">
+                                        {[...Array(testimonial.rating)].map((_, i) => (
+                                            <Star key={i} size={16} fill="currentColor" />
+                                        ))}
+                                    </div>
+                                </div>
+                                <Quote className="quote-icon" />
+                                <p className="testimonial-text">{testimonial.comment}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* CTA Section */}
+            <section className="cta-section">
+                <div className="container">
+                    <div className="cta-card animate-on-scroll scale-in">
+                        <div className="row align-items-center">
+                            <div className="col-lg-8">
+                                <h2 className="cta-title">Ready to Transform Your Business?</h2>
+                                <p className="cta-subtitle">
+                                    Let's build something amazing together. Get a free consultation today.
+                                </p>
+                            </div>
+                            <div className="col-lg-4 text-lg-end">
+                                <button className="btn btn-primary btn-lg">
+                                    Get a Quote <ArrowRight className="ms-2" />
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </section>
-
-                {/* REVIEWS SECTION */}
-                <section id="reviews" className="bg-white animate-on-scroll">
-                    <div className="mx-auto max-w-7xl px-4 py-16">
-                        <div className="text-center animate-on-scroll">
-                            <a href="/" className="inline-flex items-center rounded-full bg-blue-50 px-4 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-100 scale-in">
-                                Read Their Experiences
-                            </a>
-                            <h2 className="mt-4 text-3xl md:text-5xl font-extrabold tracking-tight text-neutral-900 fade-in-up">
-                                Client Reviews - Hear It in Their Words
-                            </h2>
-                        </div>
-
-                        <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3 animate-on-scroll">
-                            {reviews.map((review, index) => (
-                                <article key={index} className={`review-card rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm hover:shadow-md transition fade-in-up ${index < 3 ? `stagger-${index + 1}` : `stagger-${(index % 3) + 1}`}`}>
-                                    <div className="flex items-center justify-between">
-                                        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-blue-700">
-                                            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
-                                                <path d={review.iconPath} />
-                                            </svg>
-                                        </span>
-                                        <div className="flex items-center gap-1 text-amber-400">
-                                            {[...Array(review.stars)].map((_, i) => (
-                                                <svg key={i} viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor"><path d="M10 2l2.5 5.2 5.7.8-4.1 4 1 5.8-5.1-2.7-5.1 2.7 1-5.8-4.1-4 5.7-.8z" /></svg>
-                                            ))}
-                                            <span className="ml-2 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">{review.stars}.0</span>
-                                        </div>
-                                    </div>
-
-                                    <p className="mt-4 text-sm leading-6 text-neutral-700">
-                                        {review.text}
-                                    </p>
-
-                                    <hr className="my-4 border-neutral-200" />
-                                    <div>
-                                        <div className="font-semibold text-neutral-900">{review.name}</div>
-                                        <div className="text-xs text-neutral-500 mt-0.5">{review.role}</div>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            </main>
-
+                </div>
+            </section>
             <Footer />
-            <ChatWidget />
-        </>
+        </div>
     );
 };
+
+// Helper components
+const Apple = () => (
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.31-2.33 1.05-3.11z" />
+    </svg>
+);
 
 export default Home;

@@ -1,56 +1,62 @@
 import React, { useState } from 'react';
+import './Header.css';
 
 const Header = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
-        <header className="sticky top-0 z-50 backdrop-blur bg-white/80 border-b border-neutral-200">
-            <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-                <a href="/" className="flex items-center gap-3" aria-label="Talvyyo home">
-                    <div className="h-9 w-9 rounded-xl bg-neutral-900 text-white grid place-items-center font-semibold">TY</div>
-                    <div className="leading-tight">
-                        <p className="text-sm font-semibold">Talvyyo</p>
-                        <p className="text-xs text-neutral-500">Web • Apps • Branding • Growth</p>
+        <header className="tech-header">
+            <div className="header-container">
+                <a href="/" className="logo-section" aria-label="Talvyyo home">
+                    <div className="logo-icon">TY</div>
+                    <div className="logo-text">
+                        <p className="brand-name">Talvyyo</p>
+                        <p className="brand-tagline">Web • Apps • Branding • Growth</p>
                     </div>
                 </a>
 
                 <button
                     id="menuBtn"
-                    className="md:hidden rounded-lg border px-2 py-1 text-sm"
+                    className="mobile-menu-btn"
                     aria-expanded={isMobileMenuOpen}
                     aria-controls="mobileNav"
                     aria-label="Open menu"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 >
-                    Menu
+                    <span className="menu-text">Menu</span>
+                    <span className="menu-glow"></span>
                 </button>
 
-                <nav className="hidden md:flex items-center gap-6 text-sm">
-                    <a href="/" className="hover:text-neutral-700">Home</a>
-                    <a href="/" className="hover:text-neutral-700">About</a>
-                    <a href="/" className="hover:text-neutral-700">Services</a>
-                    <a href="/" className="hover:text-neutral-700">Products</a>
-                    <a href="/" className="hover:text-neutral-700">Work</a>
-                    <a href="/" className="hover:text-neutral-700">Team</a>
-                    <a href="/" className="hover:text-neutral-700">Careers</a>
-                    <a href="/" className="hover:text-neutral-700">Offers</a>
-                    <a href="/" className="hover:text-neutral-700">Contact</a>
-                    <a href="/" className="rounded-2xl bg-blue-600 text-white px-3 py-1.5 font-medium hover:bg-blue-700">Get a Quote</a>
+                <nav className="desktop-nav">
+                    <a href="#home" className="nav-link">Home</a>
+                    <a href="#about" className="nav-link">About</a>
+                    <a href="#services" className="nav-link">Services</a>
+                    <a href="#products" className="nav-link">Products</a>
+                    <a href="#work" className="nav-link">Work</a>
+                    <a href="#team" className="nav-link">Team</a>
+                    <a href="#careers" className="nav-link">Careers</a>
+                    <a href="#offers" className="nav-link">Offers</a>
+                    <a href="#contact" className="nav-link">Contact</a>
+                    <a href="#quote" className="cta-btn">
+                        <span className="btn-text">Get a Quote</span>
+                        <span className="btn-glow"></span>
+                    </a>
                 </nav>
             </div>
+
             {/* Mobile nav */}
-            <div id="mobileNav" className={`md:hidden ${isMobileMenuOpen ? 'block' : 'hidden'} border-t border-neutral-200 bg-white`}>
-                <nav className="mx-auto max-w-7xl px-4 py-3 grid gap-2 text-sm">
-                    <a href="/" className="py-1">Home</a>
-                    <a href="/" className="py-1">About</a>
-                    <a href="/" className="py-1">Services</a>
-                    <a href="/" className="py-1">Products</a>
-                    <a href="/" className="py-1">Work</a>
-                    <a href="/" className="py-1">Team</a>
-                    <a href="/" className="py-1">Careers</a>
-                    <a href="/" className="py-1">Offers</a>
-                    <a href="/" className="py-1">Contact</a>
-                    <a href="/" className="py-1 text-blue-700 font-medium">Get a Quote</a>
+            <div id="mobileNav" className={`mobile-nav ${isMobileMenuOpen ? 'open' : ''}`}>
+                <nav className="mobile-nav-content">
+                    <a href="#home" className="mobile-link">Home</a>
+                    <a href="#about" className="mobile-link">About</a>
+                    <a href="#services" className="mobile-link">Services</a>
+                    <a href="#products" className="mobile-link">Products</a>
+                    <a href="#work" className="mobile-link">Work</a>
+                    <a href="#team" className="mobile-link">Team</a>
+                    <a href="#careers" className="mobile-link">Careers</a>
+                    <a href="#offers" className="mobile-link">Offers</a>
+                    <a href="#contact" className="mobile-link">Contact</a>
+                    <a href="#quote" className="mobile-link-cta">Get a Quote</a>
                 </nav>
             </div>
         </header>
