@@ -8,14 +8,10 @@ import {
     Palette,
     Smartphone,
     Globe,
-    Users,
     Zap,
-    Shield,
     TrendingUp,
     CheckCircle,
     Quote,
-    Calendar,
-    Award,
     Sparkles
 } from 'lucide-react';
 
@@ -143,7 +139,6 @@ const Home = () => {
         const heroTitle = document.querySelector('.hero-title');
         if (!heroTitle) return;
 
-        const text = heroTitle.innerHTML;
         heroTitle.classList.add('typing-active');
 
         // Let CSS handle the typing animation
